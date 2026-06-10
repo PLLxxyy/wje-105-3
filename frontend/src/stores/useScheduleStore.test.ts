@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { nextTick } from 'vue';
 import { setActivePinia, createPinia } from 'pinia';
-import { useScheduleStore, toDateString, getWeekDates } from './useScheduleStore';
+import { useScheduleStore, toDateString, parseLocalDate, getWeekDates } from './useScheduleStore';
 import { STORAGE_KEYS } from '../utils/storage';
 
 vi.stubGlobal('crypto', {
@@ -20,6 +20,30 @@ describe('toDateString', () => {
   it('月份和日期不足两位时补零', () => {
     const date = new Date(2025, 5, 3);
     expect(toDateString(date)).toBe('2025-06-03');
+  });
+});
+
+describe('parseLocalDate', () => {
+  it('将 YYYY-MM-DD 字符串解析为本地零点的 Date 对象', () => {
+    const date = parseLocalDate('2025-06-10');
+    expect(date.getFullYear()).toBe(2025);
+    expect(date.getMonth()).toBe(5);
+    expect(date.getDate()).toBe(10);
+  });
+
+  it('toDateString 与 parseLocalDate 互为逆操作，不受时区影响', () => {
+    const original = '2025-01-15';
+    const roundTripped = toDateString(parseLocalDate(original));
+    expect(roundTripped).toBe(original);
+  });
+
+  it('parseLocalDate 驱动 getWeekDates 不会因时区偏移导致算错周', () => {
+    const dateStr = '2025-06-11';
+    const weekFromLocal = getWeekDates(parseLocalDate(dateStr));
+    const weekFromDirect = getWeekDates(new Date(2025, 5, 11));
+    expect(weekFromLocal).toEqual(weekFromDirect);
+    expect(weekFromLocal[0]).toBe('2025-06-09');
+    expect(weekFromLocal[6]).toBe('2025-06-15');
   });
 });
 

@@ -15,6 +15,11 @@ export function toDateString(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
+export function parseLocalDate(dateStr: string): Date {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
+
 export function getWeekDates(referenceDate: Date): string[] {
   const day = referenceDate.getDay();
   const mondayOffset = day === 0 ? -6 : 1 - day;

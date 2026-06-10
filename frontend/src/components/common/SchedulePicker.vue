@@ -74,7 +74,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { useScheduleStore, getWeekDates, toDateString } from '../../stores/useScheduleStore';
+import { useScheduleStore, getWeekDates, toDateString, parseLocalDate } from '../../stores/useScheduleStore';
 import { useRecipeStore } from '../../stores/useRecipeStore';
 
 interface SchedulePickerProps {
@@ -128,7 +128,7 @@ const weekDays = computed(() => {
 });
 
 function handleDateChange(): void {
-  const parsed = new Date(pickerDate.value);
+  const parsed = parseLocalDate(pickerDate.value);
   if (!Number.isNaN(parsed.getTime())) {
     referenceDate.value = parsed;
   }
