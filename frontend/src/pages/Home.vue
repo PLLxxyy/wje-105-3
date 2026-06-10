@@ -1,5 +1,33 @@
 <template>
   <div class="space-y-12">
+    <section class="border border-[var(--color-border)] bg-[var(--color-panel)] p-5">
+      <div class="flex items-end justify-between gap-4">
+        <div>
+          <p class="text-sm font-semibold text-[var(--color-muted)]">今日安排</p>
+          <h2 class="section-title">{{ todayLabel }}</h2>
+        </div>
+        <button type="button" class="action-link" @click="schedulePickerVisible = true">管理排期</button>
+      </div>
+      <div v-if="todayScheduleRecipes.length" class="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <RecipeCard
+          v-for="recipe in todayScheduleRecipes"
+          :key="recipe.id"
+          :recipe="recipe"
+          :ingredients="ingredients"
+          :collected="collectionStore.isRecipeCollected(recipe.id)"
+          @favorite="collectionStore.quickToggleFavorite"
+        />
+      </div>
+      <EmptyState
+        v-else
+        icon="程"
+        title="今天还没有安排"
+        description="打开配方详情或点击管理排期，把想调的配方安排到今天。"
+        action-text="浏览配方"
+        :action-handler="goRecipes"
+      />
+    </section>
+
     <section class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
       <div>
         <p class="text-sm font-bold uppercase text-[var(--color-muted)]">Cocktail composition workspace</p>
@@ -17,6 +45,10 @@
             <span>{{ entry.icon }}</span>
             <strong>{{ entry.label }}</strong>
           </RouterLink>
+          <button type="button" class="quick-entry" @click="schedulePickerVisible = true">
+            <span>程</span>
+            <strong>本周排期</strong>
+          </button>
         </div>
       </div>
     </section>
@@ -66,24 +98,44 @@
       />
     </section>
   </div>
+
+  <SchedulePicker
+    :visible="schedulePickerVisible"
+    @close="schedulePickerVisible = false"
+  />
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import EmptyState from '../components/common/EmptyState.vue';
+import SchedulePicker from '../components/common/SchedulePicker.vue';
 import RecipeCard from '../components/recipe/RecipeCard.vue';
 import { useCollectionStore } from '../stores/useCollectionStore';
 import { useIngredientStore } from '../stores/useIngredientStore';
 import { useRecipeStore } from '../stores/useRecipeStore';
+import { useScheduleStore, toDateString } from '../stores/useScheduleStore';
 
 const router = useRouter();
 const recipeStore = useRecipeStore();
 const ingredientStore = useIngredientStore();
 const collectionStore = useCollectionStore();
+const scheduleStore = useScheduleStore();
 const { sortedRecipes, recentRecipes } = storeToRefs(recipeStore);
 const { ingredients } = storeToRefs(ingredientStore);
+
+const schedulePickerVisible = ref(false);
+
+const today = toDateString(new Date());
+const todayLabel = new Intl.DateTimeFormat('zh-CN', { month: 'long', day: 'numeric', weekday: 'long' }).format(new Date());
+
+const todayScheduleRecipes = computed(() => {
+  const items = scheduleStore.getItemsByDate(today);
+  return items
+    .map((item) => recipeStore.getRecipeById(item.recipeId))
+    .filter((r): r is NonNullable<typeof r> => Boolean(r));
+});
 
 const quickEntries = [
   { to: '/recipes/new', label: '创建配方', icon: '+' },

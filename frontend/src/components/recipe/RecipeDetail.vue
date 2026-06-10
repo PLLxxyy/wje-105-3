@@ -65,6 +65,7 @@
         <RouterLink class="action-link" :to="`/recipes/${recipe.id}/edit`">编辑配方</RouterLink>
         <RouterLink class="action-link" :to="`/compare?left=${recipe.id}`">加入对比</RouterLink>
         <button type="button" class="action-link" @click="emit('favorite', recipe.id)">{{ collected ? '取消快速收藏' : '快速收藏' }}</button>
+        <button type="button" class="action-link" @click="emit('schedule', recipe.id)">安排排期</button>
         <button type="button" class="action-link text-red-700 dark:text-red-300" @click="emit('delete', recipe.id)">删除配方</button>
       </div>
     </aside>
@@ -93,6 +94,7 @@ const props = withDefaults(defineProps<RecipeDetailProps>(), {
 const emit = defineEmits<{
   favorite: [recipeId: string];
   delete: [recipeId: string];
+  schedule: [recipeId: string];
 }>();
 
 interface IngredientRow {

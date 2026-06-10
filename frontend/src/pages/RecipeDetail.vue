@@ -6,6 +6,7 @@
       :collected="collectionStore.isRecipeCollected(recipe.id)"
       @favorite="collectionStore.quickToggleFavorite"
       @delete="deleteCurrentRecipe"
+      @schedule="openSchedulePicker"
     />
 
     <section class="border border-[var(--color-border)] bg-[var(--color-panel)] p-5">
@@ -35,6 +36,13 @@
         </button>
       </div>
     </section>
+
+    <SchedulePicker
+      :visible="schedulePickerVisible"
+      :recipe-id="recipe.id"
+      :recipe-name="recipe.name"
+      @close="schedulePickerVisible = false"
+    />
   </div>
 
   <EmptyState
@@ -52,21 +60,25 @@ import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import EmptyState from '../components/common/EmptyState.vue';
+import SchedulePicker from '../components/common/SchedulePicker.vue';
 import RecipeDetailPanel from '../components/recipe/RecipeDetail.vue';
 import { useCollectionStore } from '../stores/useCollectionStore';
 import { useIngredientStore } from '../stores/useIngredientStore';
 import { useRecipeStore } from '../stores/useRecipeStore';
+import { useScheduleStore } from '../stores/useScheduleStore';
 
 const route = useRoute();
 const router = useRouter();
 const recipeStore = useRecipeStore();
 const ingredientStore = useIngredientStore();
 const collectionStore = useCollectionStore();
+const scheduleStore = useScheduleStore();
 const { ingredients } = storeToRefs(ingredientStore);
 const { sortedCollections: collections } = storeToRefs(collectionStore);
 
 const selectedCollectionId = ref(collections.value[0]?.id ?? '');
 const newCollectionName = ref('');
+const schedulePickerVisible = ref(false);
 
 const recipe = computed(() => recipeStore.getRecipeById(String(route.params.id)));
 
@@ -111,9 +123,14 @@ function addToCollection(): void {
   collectionStore.addRecipeToCollection(collectionId, recipe.value.id);
 }
 
+function openSchedulePicker(): void {
+  schedulePickerVisible.value = true;
+}
+
 function deleteCurrentRecipe(recipeId: string): void {
   recipeStore.deleteRecipe(recipeId);
   collectionStore.removeRecipeEverywhere(recipeId);
+  scheduleStore.removeRecipeFromSchedule(recipeId);
   void router.push('/recipes');
 }
 
