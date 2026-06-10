@@ -1,0 +1,58 @@
+@keyframes liquidSway {
+  0% {
+    transform: skewX(0deg) translateX(0);
+  }
+  33% {
+    transform: skewX(0.8deg) translateX(1px);
+  }
+  66% {
+    transform: skewX(-0.8deg) translateX(-1px);
+  }
+  100% {
+    transform: skewX(0deg) translateX(0);
+  }
+}
+
+@keyframes pourFall {
+  0% {
+    transform: translateY(-20px) scaleY(0.25);
+    opacity: 0.35;
+  }
+  40% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(60px) scaleY(1);
+    opacity: 0.65;
+  }
+}
+
+.liquid-sway {
+  animation: liquidSway 2.4s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+
+.pour-stream {
+  position: absolute;
+  left: 50%;
+  top: 12px;
+  z-index: 5;
+  height: 128px;
+  width: 10px;
+  transform: translateX(-50%);
+  border-radius: 999px;
+  opacity: 0.86;
+  animation: pourFall 900ms ease-in-out infinite;
+  box-shadow: 0 0 20px currentColor;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
+  }
+}
